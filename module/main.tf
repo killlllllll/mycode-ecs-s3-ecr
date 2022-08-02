@@ -40,7 +40,7 @@ resource "aws_ecs_task_definition" "app" {
       family = "${var.cluster_name}-${var.env}"
       requires_compatibilities = ["FARGATE"]
       network_mode             = "awsvpc"
-      execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+      execution_role_arn       = "arn:aws:iam::991008360267:role/example-ecs-task-execution"
       cpu                      = var.fargate_cpu
       memory                   = var.fargate_memory
 
@@ -85,19 +85,17 @@ resource "aws_ecs_service" "main" {
         ]
   }
 network_configuration {
-    security_groups  = [aws_security_group.ecs_tasks.id]
-    subnets          =    aws_subnet.private.*.id
+    security_groups  =  ["sg-09a741fa74e1640d2"]
+    subnets         =  ["subnet-f7b2f1bb", "subnet-e650c59d", "subnet-1f4f5277"]
     assign_public_ip = true
   }
 
 
  load_balancer {
-    target_group_arn = aws_alb_target_group.app.id
+    target_group_arn = "arn:aws:elasticloadbalancing:ap-south-1:991008360267:targetgroup/new-tg-1/5519b74f939c0ad7"
     container_name   = var.container_name
     container_port   = var.container_port
   }
-
-depends_on = [aws_alb_listener.front_end, aws_iam_role_policy_attachment.ecs_task_execution_role]
 }
 
 resource "aws_s3_bucket" "s3_bucket" {
@@ -141,3 +139,4 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
 }
 EOF
 }
+
