@@ -40,7 +40,7 @@ resource "aws_ecs_task_definition" "app" {
       family = "${var.cluster_name}-${var.env}"
       requires_compatibilities = ["FARGATE"]
       network_mode             = "awsvpc"
-      execution_role_arn       = "arn:aws:iam::991008360267:role/example-ecs-task-execution"
+      execution_role_arn       = var.execution_role_arn
       cpu                      = var.fargate_cpu
       memory                   = var.fargate_memory
 
@@ -85,14 +85,14 @@ resource "aws_ecs_service" "main" {
         ]
   }
 network_configuration {
-    security_groups  =  ["sg-09a741fa74e1640d2"]
-    subnets         =  ["subnet-f7b2f1bb", "subnet-e650c59d", "subnet-1f4f5277"]
+    security_groups  =  var.security_groups
+    subnets         =  var.subnets
     assign_public_ip = true
   }
 
 
  load_balancer {
-    target_group_arn = "arn:aws:elasticloadbalancing:ap-south-1:991008360267:targetgroup/new-tg-1/5519b74f939c0ad7"
+    target_group_arn = var.targetgroup_arn
     container_name   = var.container_name
     container_port   = var.container_port
   }
@@ -128,7 +128,9 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
       "Effect": "Allow",
       "Principal": "*",
       "Action": [ 
-        "s3:GetObject"
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:ListBucket"
        ],
       "Resource": [
         "arn:aws:s3:::${aws_s3_bucket.s3_bucket.id}",
@@ -140,3 +142,19 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
 EOF
 }
 
+resource "aws_s3_bucket_cors_configuration" "example" {
+  bucket = aws_s3_bucket.s3_bucket.bucket
+
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["PUT", "POST", "DELETE"]
+    allowed_origins = ["https://ft.cloudtoday.click" , "https://bk.cloudtoday.click"]
+    expose_headers  = ["ETag"]
+    max_age_seconds = 3000
+  }
+
+  cors_rule {
+    allowed_methods = ["GET"]
+    allowed_origins = ["*"]
+  }
+}
