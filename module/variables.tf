@@ -51,11 +51,6 @@ variable "cloudfront_max_ttl" {
   description = "The maximum TTL for the cloudfront cache"
 }
 
-variable "provider_region" {
-  default     = "ap-south-1"
-  description = "provider_region_for_cloudfront"
-}
-
 variable "validation_method" {
   default     = "DNS"
 }
